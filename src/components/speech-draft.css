@@ -1,0 +1,27 @@
+.speech-draft{width:100%;text-align:left;pointer-events:auto}
+.speech-draft textarea{display:block}
+.speech-draft-tools{display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
+.draft-mic{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:7px 12px;border:1px solid #c4ae7077;background:#14282be8;color:#e6cf9b;font-size:12px;letter-spacing:.5px}
+.draft-mic:hover,.draft-mic[aria-pressed=true]{background:#4d4e3266;border-color:#e3c88d}
+.draft-mic:disabled{opacity:.4;cursor:default}
+.draft-cancel{min-height:36px;padding:6px 8px;color:#bcc6b3;font-size:11px}
+.draft-recognizer{margin-left:auto;font-size:9px;color:#aeb9a6;line-height:1.6}
+.speech-draft-status{display:flex;align-items:center;gap:8px;min-height:27px;font-size:11px;line-height:1.7;color:#bec7b6;margin-top:5px}
+.speech-draft-status .wave{height:16px}
+.speech-draft-error{font-size:11px;line-height:1.8;color:#ead0a8;border-left:2px solid #b39b67;padding:6px 10px;background:#112027e8;margin-top:5px}
+.council-content:has(.speech-draft){max-height:55%;gap:12px}
+.is-council:has(.speech-draft) .table-evidence{display:none}
+.is-council:has(.speech-draft) .council-seats{top:26%}
+.council-content:has(.speech-draft) .council-caption{font-size:15px;line-height:1.7}
+.council-content:has(.speech-draft) .council-demo-note{margin:0}
+@media(min-width:1001px){
+ .is-council:has(.speech-draft) .council-seats{top:22%}
+}
+@media(max-width:650px){
+ .draft-mic{font-size:11px;min-height:40px}
+ .draft-recognizer{font-size:8px}
+ .speech-draft-status{font-size:10px}
+ .council-content:has(.speech-draft){max-height:50%;gap:9px;bottom:88px}
+ .council-content:has(.speech-draft) .council-caption{font-size:12px}
+ .is-council:has(.speech-draft) .council-seats{top:29%}
+}

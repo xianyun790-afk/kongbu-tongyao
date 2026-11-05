@@ -1,0 +1,126 @@
+{
+  "source_blend": "白榆儿童之家-餐厅-v0.10.blend",
+  "source_version": "0.10.0",
+  "workflow": "Original real meshes, export-copy decimation and UV base-colour baking; no generated room bitmap; original blend unchanged. Geometry, cloth folds, candelabrum, plates, cutlery and placemats remain real 3D.",
+  "cc0_textures": [
+    {
+      "family": "wood",
+      "provider": "Poly Haven",
+      "license": "CC0-1.0",
+      "assets": [
+        {
+          "id": "oak_veneer_05",
+          "name": "Oak Veneer 05",
+          "page": "https://polyhaven.com/a/oak_veneer_05",
+          "author": {
+            "Jenelle van Heerden": "All"
+          }
+        },
+        {
+          "id": "mocha_oak_veneer",
+          "name": "Mocha Oak Veneer",
+          "page": "https://polyhaven.com/a/mocha_oak_veneer",
+          "author": {
+            "Jenelle van Heerden": "All"
+          }
+        },
+        {
+          "id": "wood_floor_worn",
+          "name": "Wood Floor Worn",
+          "page": "https://polyhaven.com/a/wood_floor_worn",
+          "author": {
+            "Dimitrios Savva": "All"
+          }
+        }
+      ]
+    },
+    {
+      "family": "wall-fabric",
+      "provider": "Poly Haven",
+      "license": "CC0-1.0",
+      "assets": [
+        {
+          "id": "velour_velvet",
+          "name": "Velour Velvet",
+          "page": "https://polyhaven.com/a/velour_velvet",
+          "author": {
+            "colormass": "Photography",
+            "Rico Cilliers": "Processing"
+          }
+        },
+        {
+          "id": "rough_linen",
+          "name": "Rough Linen",
+          "page": "https://polyhaven.com/a/rough_linen",
+          "author": {
+            "colormass": "Photography",
+            "Rico Cilliers": "Processing"
+          }
+        },
+        {
+          "id": "dirty_carpet",
+          "name": "Dirty Carpet",
+          "page": "https://polyhaven.com/a/dirty_carpet",
+          "author": {
+            "Rohit Seervi": "All"
+          }
+        },
+        {
+          "id": "plaster_grey_04",
+          "name": "Plaster Grey 04",
+          "page": "https://polyhaven.com/a/plaster_grey_04",
+          "author": {
+            "Rob Tuytel": "All"
+          }
+        }
+      ]
+    },
+    {
+      "family": "props",
+      "provider": "Poly Haven",
+      "license": "CC0-1.0",
+      "assets": [
+        {
+          "id": null,
+          "name": "Dark Wood",
+          "page": "https://polyhaven.com/a/dark_wood",
+          "author": {
+            "Dario Barresi": "Baking",
+            "Dimitrios Savva": "Photography",
+            "Rico Cilliers": "Tiling"
+          }
+        }
+      ]
+    }
+  ],
+  "cassette_model": {
+    "provider": "Poly Haven",
+    "id": "cassette_player",
+    "page": "https://polyhaven.com/a/cassette_player",
+    "license": "CC0-1.0"
+  },
+  "original_geometry": "Room architecture, Gothic-revival chairs and table, wall broadcast, clock, DM speaker, candelabrum, silver plates, cutlery and placemats derive from locally authored v0.3–v0.10 modelling scripts.",
+  "rug_pattern": {
+    "source": "Dirty Carpet photographic texture with an original restrained rectangular border for the public web Demo.",
+    "provider": "Poly Haven",
+    "asset_id": "dirty_carpet",
+    "author": "Rohit Seervi",
+    "page": "https://polyhaven.com/a/dirty_carpet",
+    "license": "CC0-1.0",
+    "license_url": "https://polyhaven.com/license",
+    "source_file": "dirty_carpet_diff_1k.jpg",
+    "source_sha256": "b0ef2b248cb7dfa1d33f1b2215fb3b83e815527d4091a2c3a423bdcd63bef60a",
+    "changes": "Public Demo only: dark wine recolor, reduced contrast, worn original rectangular bands and softened outer hem. The existing rug geometry and UVs are retained.",
+    "web_texture": {
+      "name": "web-rug-cc0-dirty-carpet-wine-1024",
+      "mime_type": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "sha256": "337fa2fb412730bf19459d00a7cb81758392f3465850fc0576ebfadef9792028"
+    }
+  },
+  "web_approximation": "Cycles-only normal microstructure and high-frequency procedural fibres are represented by grouped base-colour atlases and real-time PBR roughness. Static transparent weather overlays are replaced by runtime rain/fog; the room is not baked into a flat picture.",
+  "public_demo_export": "dining-public-demo-2026-11-05"
+}

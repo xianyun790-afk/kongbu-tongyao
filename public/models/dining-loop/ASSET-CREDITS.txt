@@ -1,0 +1,87 @@
+人物资产署名 / Character asset credits
+
+Eric Rigged 001 - Rigged 3D Business Man
+Author: Renderpeople
+Author profile: https://sketchfab.com/renderpeople
+Official CC BY source: https://sketchfab.com/3d-models/eric-rigged-001-rigged-3d-business-man-a46bc9f67aaa415bb4f3241eef900e7f
+License: Creative Commons Attribution 4.0 International
+License URL: https://creativecommons.org/licenses/by/4.0/
+Official source metadata: https://api.sketchfab.com/v3/models/a46bc9f67aaa415bb4f3241eef900e7f
+
+Changes made for this project: reposed skeleton into a seated/slumped fictional scene; material/color adjustments; resized textures; froze pose and optimized glTF for web rendering. The fictional character and story do not describe the scanned model performer or imply their endorsement.
+
+The CC BY license applies to the credited character asset and its adapted geometry/textures, not to the entire game or script. Other room assets retain their recorded original licenses.
+
+Additional night / coffee assets · revision r11
+
+Tea Set 01 · one small porcelain cup
+Authors: James Ray Cock, Rico Cilliers, Jurita Burger
+https://polyhaven.com/a/tea_set_01
+License: CC0-1.0
+Changes: One existing small cup tipped and fitted to desktop; 2K diffuse, 1K web normal and metallic-roughness maps.
+
+Kloppenheim 04
+Authors: Greg Zaal
+https://polyhaven.com/a/kloppenheim_04
+License: CC0-1.0
+Changes: Photographed night panorama cropped and graded for distant background only.
+
+Rough Plaster Brick 04
+Authors: Rob Tuytel
+https://polyhaven.com/a/rough_plaster_brick_04
+License: CC0-1.0
+Changes: Real-world facade PBR mapped to newly modeled courtyard facade.
+
+seamless coffee texture
+Authors: TinyWorlds
+https://opengameart.org/content/seamless-coffee-texture
+License: CC0-1.0
+Changes: Restrained color variation for newly modeled thin liquid film. Original method unspecified; not claimed as photograph.
+
+various old paper, stains, drops and other
+Authors: Q_x
+https://opengameart.org/content/various-old-paper-stains-drops-and-other
+License: CC0-1.0
+Changes: Small normalized scan region used as subtle wetness variation; original is scanned soaked paper, not a photo of coffee spill. A second clean scan region was cropped/recolored for neutral blank paper fibre.
+
+Book Encyclopedia Set 01
+Authors: John Malcolm
+https://polyhaven.com/a/book_encyclopedia_set_01
+License: CC0-1.0
+Changes: Three existing worn books at 1K placed beside printer cabinet, no clue or text added.
+
+Study storage and reposed character · revision r12
+
+Renderpeople Eric: revised continuous spine/neck pose; back waistcoat texture recolored charcoal. Original CC BY 4.0 attribution above applies.
+
+
+Book Encyclopedia Set 01
+Author: John Malcolm
+https://polyhaven.com/a/book_encyclopedia_set_01
+License: CC0-1.0
+Changes: Nine worn authored volumes and a three-volume horizontal stack; original 1K PBR retained; reused existing local downloaded asset.
+
+Mocha Oak Veneer
+Author: Jenelle van Heerden
+https://polyhaven.com/a/mocha_oak_veneer
+License: CC0-1.0
+Changes: Existing licensed photographic PBR adapted to 1K and a darker warm oak color grade; no new download.
+
+various old paper, stains, drops and other
+Author: Q_x
+https://opengameart.org/content/various-old-paper-stains-drops-and-other
+License: CC0-1.0
+Changes: Reused existing clean paper fibre adaptation, reduced to512px. Blank notices only; no new text, names, dates, chronology or clues.
+
+Original cabinet and neutral noticeboard geometry
+Changes: Metre-scale edited joinery, shelves, plinth and door fields with old brass fittings, cloth archival folders and closed blank boxes; no lights, cameras or interactions.
+
+
+Public GitHub Demo rug · 2026-11-05
+
+Dirty Carpet
+Author: Rohit Seervi
+https://polyhaven.com/a/dirty_carpet
+License: CC0-1.0
+License URL: https://polyhaven.com/license
+Changes: The public Demo uses the photographed carpet pile recolored dark wine, with a newly authored restrained rectangular border, reduced contrast and softened worn hem. The existing rug geometry and UVs are retained. This replacement is specific to the public Demo export.

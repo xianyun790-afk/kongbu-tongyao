@@ -1,0 +1,14 @@
+{
+  "dining-room.glb": {
+    "bytes": 4780680,
+    "sha256": "df0778d8636dac87b37deb39eab0911d156fd41e303b48d9d12fff090dbb8b60",
+    "binChunkUnchanged": true,
+    "localPaths": 0
+  },
+  "office-room.glb": {
+    "bytes": 32741088,
+    "sha256": "4cf22bc82afbffa24f248f3538b14afd90f3fbb72b6744ddd4fe265494bbe8b3",
+    "binChunkUnchanged": true,
+    "localPaths": 0
+  }
+}

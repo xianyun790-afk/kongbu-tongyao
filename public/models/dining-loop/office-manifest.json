@@ -1,0 +1,287 @@
+{
+  "version": "office-0.4.0-web-r12-preview",
+  "model": "office-room.glb",
+  "coordinateSystem": "Three.js Y-up; Blender (x,y,z) → (x,z,-y)",
+  "opening": {
+    "position": [
+      2.25,
+      1.78,
+      2.25
+    ],
+    "target": [
+      -0.2,
+      1.12,
+      -1.0
+    ],
+    "fov": 58.72
+  },
+  "interactions": [
+    {
+      "id": "ledger",
+      "objectNames": [
+        "OFFICE_metal__ledger",
+        "OFFICE_props__ledger"
+      ],
+      "anchor": [
+        0.26,
+        0.91,
+        -1.17
+      ],
+      "focus": {
+        "position": [
+          1.65,
+          1.7,
+          0.15
+        ],
+        "target": [
+          0.44,
+          0.86,
+          -1.23
+        ],
+        "fov": 38
+      }
+    },
+    {
+      "id": "computer",
+      "objectNames": [
+        "OFFICE_iron__computer",
+        "OFFICE_metal__computer",
+        "OFFICE_props__computer"
+      ],
+      "anchor": [
+        -1.96,
+        1.18,
+        -0.74
+      ],
+      "focus": {
+        "position": [
+          0.15,
+          1.65,
+          0.15
+        ],
+        "target": [
+          -1.65,
+          1.05,
+          -1.05
+        ],
+        "fov": 44
+      }
+    },
+    {
+      "id": "victim",
+      "objectNames": [
+        "OFFICE_human__victim_0"
+      ],
+      "anchor": [
+        0.66,
+        1.11,
+        -1.73
+      ],
+      "focus": {
+        "position": [
+          1.95,
+          1.75,
+          0.2
+        ],
+        "target": [
+          0.65,
+          0.98,
+          -1.55
+        ],
+        "fov": 42
+      }
+    },
+    {
+      "id": "return",
+      "objectNames": [
+        "OFFICE_architecture__return",
+        "OFFICE_furniture__return"
+      ],
+      "anchor": [
+        -1.5,
+        1.35,
+        2.36
+      ],
+      "focus": {
+        "position": [
+          1.4,
+          1.7,
+          1.6
+        ],
+        "target": [
+          -1.5,
+          1.2,
+          2.4
+        ],
+        "fov": 48
+      }
+    },
+    {
+      "id": "coffee",
+      "objectNames": [
+        "OFFICE_DETAIL_coffee_drop_0",
+        "OFFICE_DETAIL_coffee_drop_1",
+        "OFFICE_DETAIL_coffee_drop_2",
+        "OFFICE_DETAIL_coffee_drop_3",
+        "OFFICE_DETAIL_coffee_inside_low_bowl_film",
+        "OFFICE_DETAIL_coffee_lip_connected_film",
+        "OFFICE_DETAIL_coffee_porcelain_cup",
+        "OFFICE_DETAIL_coffee_spilled_thin_pool"
+      ],
+      "anchor": [
+        1.275,
+        0.964,
+        -1.3
+      ],
+      "focus": {
+        "position": [
+          1.86,
+          1.24,
+          -0.69
+        ],
+        "target": [
+          1.3,
+          0.846,
+          -1.235
+        ],
+        "fov": 32
+      }
+    }
+  ],
+  "scope": "Freely accessible office art preview; no readable R2 ledger text, R3 forensic evidence, or ending logic",
+  "interiorBounds": {
+    "min": [
+      -2.6,
+      0,
+      -2.5
+    ],
+    "max": [
+      2.6,
+      3.3,
+      2.5
+    ]
+  },
+  "asset": {
+    "format": "glTF 2.0 GLB",
+    "compression": "KHR_draco_mesh_compression",
+    "bytes": 32741088,
+    "realGeometry": true,
+    "sourceVersion": "office-0.4.0",
+    "textureMax": 2048,
+    "meshCount": 46,
+    "vertices": 237134,
+    "r2ReadableTextExported": false,
+    "r3PropsExported": false,
+    "sourceSha256": "775313e90faeac782c24e2e60b61b3bdcbe22839e0219c52a3d3903717b06264",
+    "victimModel": "Eric Rigged 001 by Renderpeople / CC BY 4.0",
+    "triangles": 188418,
+    "roomBinPreserved": true,
+    "oldMannequinReplaced": true,
+    "staticPosedVictim": true,
+    "detailAttribution": {
+      "revision": "r11",
+      "assets": [
+        {
+          "name": "Tea Set 01 · one small porcelain cup",
+          "authors": [
+            "James Ray Cock",
+            "Rico Cilliers",
+            "Jurita Burger"
+          ],
+          "source": "https://polyhaven.com/a/tea_set_01",
+          "license": "CC0-1.0",
+          "changes": "One existing small cup tipped and fitted to desktop; 2K diffuse, 1K web normal and metallic-roughness maps."
+        },
+        {
+          "name": "Kloppenheim 04",
+          "authors": [
+            "Greg Zaal"
+          ],
+          "source": "https://polyhaven.com/a/kloppenheim_04",
+          "license": "CC0-1.0",
+          "changes": "Photographed night panorama cropped and graded for distant background only."
+        },
+        {
+          "name": "Rough Plaster Brick 04",
+          "authors": [
+            "Rob Tuytel"
+          ],
+          "source": "https://polyhaven.com/a/rough_plaster_brick_04",
+          "license": "CC0-1.0",
+          "changes": "Real-world facade PBR mapped to newly modeled courtyard facade."
+        },
+        {
+          "name": "seamless coffee texture",
+          "authors": [
+            "TinyWorlds"
+          ],
+          "source": "https://opengameart.org/content/seamless-coffee-texture",
+          "license": "CC0-1.0",
+          "changes": "Restrained color variation for newly modeled thin liquid film. Original method unspecified; not claimed as photograph."
+        },
+        {
+          "name": "various old paper, stains, drops and other",
+          "authors": [
+            "Q_x"
+          ],
+          "source": "https://opengameart.org/content/various-old-paper-stains-drops-and-other",
+          "license": "CC0-1.0",
+          "changes": "Small normalized scan region used as subtle wetness variation; original is scanned soaked paper, not a photo of coffee spill. A second clean scan region was cropped/recolored for neutral blank paper fibre."
+        },
+        {
+          "name": "Book Encyclopedia Set 01",
+          "authors": [
+            "John Malcolm"
+          ],
+          "source": "https://polyhaven.com/a/book_encyclopedia_set_01",
+          "license": "CC0-1.0",
+          "changes": "Three existing worn books at 1K placed beside printer cabinet, no clue or text added."
+        }
+      ],
+      "liquidGeometry": "Authored thin physically shaded mesh, not a downloaded fluid simulation."
+    },
+    "r10BinPreserved": false,
+    "oldCoffeeAndExteriorReplaced": true,
+    "r12RetainedPayloadsLossless": true,
+    "r12Attribution": {
+      "assets": [
+        {
+          "name": "Book Encyclopedia Set 01",
+          "author": "John Malcolm",
+          "source": "https://polyhaven.com/a/book_encyclopedia_set_01",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://polyhaven.com/license",
+          "usage": "Nine worn authored volumes and a three-volume horizontal stack; original 1K PBR retained; reused existing local downloaded asset."
+        },
+        {
+          "name": "Mocha Oak Veneer",
+          "author": "Jenelle van Heerden",
+          "source": "https://polyhaven.com/a/mocha_oak_veneer",
+          "license": "CC0-1.0",
+          "licenseUrl": "https://polyhaven.com/license",
+          "usage": "Existing licensed photographic PBR adapted to 1K and a darker warm oak color grade; no new download."
+        },
+        {
+          "name": "various old paper, stains, drops and other",
+          "author": "Q_x",
+          "source": "https://opengameart.org/content/various-old-paper-stains-drops-and-other",
+          "license": "CC0-1.0",
+          "usage": "Reused existing clean paper fibre adaptation, reduced to512px. Blank notices only; no new text, names, dates, chronology or clues."
+        },
+        {
+          "name": "Original cabinet and neutral noticeboard geometry",
+          "usage": "Metre-scale edited joinery, shelves, plinth and door fields with old brass fittings, cloth archival folders and closed blank boxes; no lights, cameras or interactions."
+        }
+      ],
+      "checks": {
+        "allNamesScoped": true,
+        "noCamerasLightsAnimationOrRig": true,
+        "allImagesEmbedded": true,
+        "max1K": true,
+        "atMost10MaterialBatches": true,
+        "rangesValid": true,
+        "sourceStillUnchanged": true
+      }
+    }
+  }
+}

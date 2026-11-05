@@ -1,0 +1,3 @@
+@font-face{font-family:"Archive Print";src:url("/fonts/archive-print.woff2") format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"Archive Print";src:url("/fonts/archive-reading.woff2") format("woff2");font-weight:400;font-display:swap}
+*{box-sizing:border-box}body{margin:0;background:#14191c}button,input,textarea{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer}button:disabled{cursor:default}a{color:inherit}textarea{color:inherit}

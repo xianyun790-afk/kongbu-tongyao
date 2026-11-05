@@ -1,0 +1,1 @@
+export function Wave({active=false,level=0}:{active?:boolean;level?:number}){return <span aria-hidden="true" className={`wave ${active?'is-active':''}`} style={{'--level':level} as React.CSSProperties}>{Array.from({length:19},(_,i)=><i key={i} style={{'--i':i,'--h':7+Math.sin(i*2.3)*4+(i>5&&i<14?9:0)} as React.CSSProperties}/>)}</span>;}
