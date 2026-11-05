@@ -50,3 +50,27 @@ test('rejected unreleased answer is never synthesized, and configuration errors 
  f.client.message({type:'PostMultimodalGenerate',request_id:'t',text:'缺了谁？'});answer(f,'原磁带里保留了小满。');await settle();assert.equal(f.calls.length,0);assert.ok(!f.client.sent.some(m=>m.text?.includes('小满')));
  }finally{f.close();}
 });
+
+test('text-only provider completion starts external speech without waiting for an NIA playback event',async()=>{
+ const f=fixture();try{
+ f.client.message({type:'PostMultimodalGenerate',request_id:'text-only',text:'你好'});
+ f.upstream.message({type:'ResponseStartTextStream',index:'text-only'});
+ f.upstream.message({type:'ResponseTextSegment',index:'text-only',text:'你好。'});
+ assert.equal(f.calls.length,0);
+ f.upstream.message({type:'ResponseEndTextStream',index:'text-only',text:'你好。',complete:true});await settle();
+ assert.equal(f.calls.length,1);assert.equal(f.calls[0].text,'你好。');assert.equal(f.client.sent.at(-1).type,'AgentEndPlay');
+ const count=f.client.sent.length;
+ f.upstream.message({type:'AgentEndPlay'});f.upstream.message({type:'ResponseEndTextStream',index:'text-only',text:'你好。',complete:true});await settle();
+ assert.equal(f.calls.length,1);assert.equal(f.client.sent.length,count);
+ }finally{f.close();}
+});
+test('intermediate text cannot trigger speech; the final complete stream combines the approved parts',async()=>{
+ const f=fixture();try{
+ f.client.message({type:'PostMultimodalGenerate',request_id:'parts',text:'你好'});
+ for(const [index,text,complete] of [['a','你好，',false],['b','可以慢慢看。',true]]){
+ f.upstream.message({type:'ResponseStartTextStream',index});f.upstream.message({type:'ResponseTextSegment',index,text});f.upstream.message({type:'ResponseEndTextStream',index,text,complete});await settle();
+ if(!complete)assert.equal(f.calls.length,0);
+ }
+ assert.equal(f.calls.length,1);assert.equal(f.calls[0].text,'你好，可以慢慢看。');
+ }finally{f.close();}
+});

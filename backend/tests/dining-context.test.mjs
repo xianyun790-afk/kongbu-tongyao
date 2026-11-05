@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {diningPublic,diningPrompt,diningProblems,diningLocalGuidance,normalizeDiningContext} from '../scripts/dining-context.mjs';
+import {diningPublic,diningPrompt,diningProblems,diningLocalGuidance,normalizeDiningContext,diningGenerationInput} from '../scripts/dining-context.mjs';
 
 const groups=['A01','A02','A03'];
 const context=known=>({known,sharedListening:known.includes('A02')});
@@ -68,4 +68,26 @@ test('normal hypothesis discussion and short social replies are not blocked by t
 test('referencing an existing public record is allowed without permitting virtual game actions',()=>{
  for(const text of ['先看已经公开的记录。','这份材料已经公开，可以在手记里回看。','三组材料都已公开，不需要寻找第四组。'])assert.deepEqual(diningProblems(text,context(groups)),[],text);
  for(const text of ['我已经替你公开磁带。','我帮你公开了A02。','我会自动推进调查。','推理已经提交成功。','已经完成调查。'])assert.ok(diningProblems(text,context(groups)).length,text);
+});
+
+test('real model regression: identity suspicion is not affirmed by a matching recording gap',()=>{
+ const q='我怀疑许知音改了副本，两份录音能支持吗？';
+ assert.ok(diningProblems('能支持。原带有小满，副本没有。不过不能直接认定许知音。',context(['A01','A02']),q).length);
+ assert.deepEqual(diningProblems('不能据此认定许知音。原带与副本的差异能支持缺失称呼，但没有确认修改者。',context(['A01','A02']),q),[]);
+});
+test('real model regression: unavailable contact and presence records are not future tasks',()=>{
+ for(const text of ['目前缺的是谁接触过设备、当时的在场情况，这些还没公开。','还得看更多细节，比如有没有人接触过磁带、当时她在不在现场。'])assert.ok(diningProblems(text,context(groups)).length);
+ assert.deepEqual(diningProblems('本轮不提供设备接触和角色在场记录，不需要再找这些资料。',context(groups)),[]);
+ assert.deepEqual(diningProblems('找回称呼不需要新增设备接触或角色在场记录。',context(groups)),[]);
+});
+test('turn focus distinguishes completion of the small mystery from naming an editor without leaking unopened tape',()=>{
+ const all=diningGenerationInput('哪些依据支持，接下来还缺什么？',context(groups));assert.ok(all.includes('不再缺新线索'));assert.ok(all.includes('同一组'));
+ const identity=diningGenerationInput('那凭什么不能直接认定是她？',context(['A01','A02']));assert.ok(identity.includes('不能认定谁'));
+ const early=diningGenerationInput('刚才那个缺口哪里不自然？',context(['A01']));assert.ok(!early.includes('小满'));assert.ok(early.includes('唐棠'));
+ assert.equal(diningGenerationInput('这里有点阴森，我想缓一下。',context(groups)),'这里有点阴森，我想缓一下。');
+});
+test('real model regression: the last recorded name is not an earlier name in the sequence',()=>{
+ assert.ok(diningProblems('底噪中断前最后听到的“知音”是完整的。',context(['A01'])).length);
+ assert.deepEqual(diningProblems('A01最后叫到的名字是唐棠，随后是中断和“把凳子搬过来”。',context(['A01'])),[]);
+ assert.deepEqual(diningProblems('最后听到的六个名字是阿秋、时安、周叙、知音、程野、唐棠。',context(['A01'])),[]);
 });

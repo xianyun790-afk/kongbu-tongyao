@@ -3,7 +3,7 @@ import {WebSocket} from 'ws';
 import {ConversationOutputGate} from './conversation-output-gate.mjs';
 import {createDiningJwt,loadDiningEnvironment} from './dining-runtime.mjs';
 import {getDiningVoiceConfig,synthesizeDiningSpeech} from './dining-voice.mjs';
-import {normalizeDiningContext,diningOpening,diningPrompt,diningPipeline,diningProblems,diningLocalGuidance} from './dining-context.mjs';
+import {normalizeDiningContext,diningOpening,diningPrompt,diningPipeline,diningProblems,diningLocalGuidance,diningGenerationInput} from './dining-context.mjs';
 
 export function createDiningVoice(){
  const config=getDiningVoiceConfig(loadDiningEnvironment());
@@ -69,7 +69,7 @@ export function attachDiningSession(client,{credentials,upstreamFactory,voice=cr
   forward({type:'InterruptAgent'});if(turn)turn.texts=[];
   if(retry++>=1){fallback();return;}
   const t=turn;
-  retryTimer=setTimeout(()=>{retryTimer=null;if(!t||!isCurrent(t))return;gate.reset();forward({type:'SetSystemPrompt',system_prompt:diningPrompt(context)+'\n\n本轮校正：'+problems.join(' ')});forward({type:'PostMultimodalGenerate',text:lastInput,request_id:'dining-corrected-'+Date.now()});},250);
+  retryTimer=setTimeout(()=>{retryTimer=null;if(!t||!isCurrent(t))return;gate.reset();forward({type:'SetSystemPrompt',system_prompt:diningPrompt(context)+'\n\n本轮校正：'+problems.join(' ')});forward({type:'PostMultimodalGenerate',text:diningGenerationInput(lastInput,context)+'\n本轮校正（不要朗读标签）：'+problems.join(' '),request_id:'dining-corrected-'+Date.now()});},250);
  }});
  upstream.on('open',()=>{connected=true;clearTimeout(timeout);send({type:'TransportReady',experience:'dining-loop',protocol_version:2});});
  upstream.on('message',(raw,binary)=>{
@@ -78,11 +78,18 @@ export function attachDiningSession(client,{credentials,upstreamFactory,voice=cr
   if(m.type==='CallFn'){forward({type:'FnReturn',call_id:m.call_id,status:'NoSuchFn',result:{content:'本轮DM没有游戏控制工具；所有调查和提交必须由玩家在界面操作。'}});return;}
   if(client.bufferedAmount>1024*1024){send({type:'LocalError',message:'AI DM语音接收拥堵，请停止后重试。'});client.close(1000);upstream.close();return;}
   if(/^Response(?:Start|End|Text|Audio)/.test(m.type)||['AgentStartPlay','AgentEndPlay'].includes(m.type)){
-   if(!turn||retiredIndices.has(m.index))return;
+   if(!turn||turn.modelFinished||retiredIndices.has(m.index))return;
    if(m.index!==undefined)turn.indices.add(m.index);
    if(voice&&/Audio/.test(m.type))return; // Ignore NIA audio even if it ignores tts.enabled=false.
    if(opening){if(!/Text/.test(m.type))sendTurn(m);if(m.type==='AgentEndPlay')opening=false;}
-   else gate.push(m);
+   else {
+    const current=turn;gate.push(m);
+    // With NIA TTS disabled the provider ends at complete:true, without AgentEndPlay.
+    // Final validation must still run before the external voice can start.
+    if(voice&&m.type==='ResponseEndTextStream'&&m.complete===true&&current===turn&&gate.accepted&&!gate.rejected){
+     current.modelFinished=true;gate.push({type:'AgentEndPlay'});
+    }
+   }
    return;
   }
   if(m.type==='Report'&&(m.level==='error'||Number(m.code)>=400)||m.type==='ResponseBlocked'){
@@ -108,7 +115,7 @@ export function attachDiningSession(client,{credentials,upstreamFactory,voice=cr
     sendTurn({type:'ResponseStartTextStream',index,source:'opening'},t);sendTurn({type:'ResponseTextSegment',index,text},t);sendTurn({type:'ResponseEndTextStream',index,text,complete:true},t);
     if(voice)void finishVoice(t,text);else forward({type:'PostSayIt',text,add_history:false,request_id});break;
    }
-   case 'PostMultimodalGenerate':if(typeof m.text==='string'&&m.text.trim()&&m.text.length<=1200){startTurn(request_id);lastInput=m.text.trim();forward({type:'SetSystemPrompt',system_prompt:diningPrompt(context)});forward({type:m.type,text:lastInput,request_id});}break;
+   case 'PostMultimodalGenerate':if(typeof m.text==='string'&&m.text.trim()&&m.text.length<=1200){startTurn(request_id);lastInput=m.text.trim();forward({type:'SetSystemPrompt',system_prompt:diningPrompt(context)});forward({type:m.type,text:diningGenerationInput(lastInput,context),request_id});}break;
   }
  });
  const cleanup=()=>{closed=true;retire();clearTimeout(timeout);clearTimeout(expires);if(retryTimer)clearTimeout(retryTimer);upstream.close();};
