@@ -1,10 +1,12 @@
 import {PcmStreamPlayer,type StreamAudio} from '@/lib/stream-audio';
+import {DM_API_BASE,DM_INVITE_TOKEN} from './demo-mode';
+import {dmEndpoints} from './dm-endpoint';
 
 export type DiningDmState='idle'|'connecting'|'thinking'|'speaking'|'error';
 export type DiningDmSource='ai'|'opening'|'local-guidance';
 export type DiningDmContext={known:('A01'|'A02'|'A03')[];sharedListening?:boolean;history:{who:string;text:string}[]};
 type Message=Record<string,unknown>&{type:string};
-type Callbacks={onState:(state:DiningDmState)=>void;onReply:(text:string,complete:boolean,source:DiningDmSource)=>void;onError:(message:string)=>void;onAudioReceived?:(bytes:number)=>void};
+type Callbacks={onState:(state:DiningDmState)=>void;onReply:(text:string,complete:boolean,source:DiningDmSource)=>void;onError:(message:string)=>void;onWarning?:(message:string)=>void;onAudioReceived?:(bytes:number)=>void};
 type Pending={types:string[];resolve:(message:Message)=>void;reject:(error:Error)=>void;timer:ReturnType<typeof setTimeout>};
 const cancelled=()=>new DOMException('AI DM回应已取消。','AbortError');
 
@@ -17,8 +19,11 @@ export class DiningDmSession {
  private replyTimer:ReturnType<typeof setTimeout>|null=null;
  private idleTimer:ReturnType<typeof setTimeout>|null=null;
  private active:{resolve:()=>void;reject:(error:Error)=>void}|null=null;
+ private activeRequestId:string|null=null;
  private responseIndex:unknown=null;private audioIndex:unknown=null;private transcript='';private source:DiningDmSource='ai';private bytes=0;private started=false;
- constructor(private callbacks:Callbacks,dependencies?:{audio?:StreamAudio}){this.audio=dependencies?.audio??new PcmStreamPlayer();}
+ private apiBase:string;
+ private inviteToken:string;
+ constructor(private callbacks:Callbacks,dependencies?:{audio?:StreamAudio;apiBase?:string;inviteToken?:string}){this.audio=dependencies?.audio??new PcmStreamPlayer();this.apiBase=dependencies?.apiBase??DM_API_BASE;this.inviteToken=dependencies?.inviteToken??DM_INVITE_TOKEN;}
  setContext(context:DiningDmContext){
   const changed=JSON.stringify(this.context.known)!==JSON.stringify(context.known)||Boolean(this.context.sharedListening)!==Boolean(context.sharedListening);
   this.context={known:[...context.known],sharedListening:context.sharedListening===true,history:context.history.map(m=>({...m})).slice(-12)};
@@ -39,10 +44,12 @@ export class DiningDmSession {
  private clearIdle(){if(this.idleTimer)clearTimeout(this.idleTimer);this.idleTimer=null;}
  private idle(){this.clearIdle();if(this.ready&&!this.active)this.idleTimer=setTimeout(()=>this.stop(),30000);}
  private progress(){if(!this.active)return;this.clearDeadline();this.replyTimer=setTimeout(()=>this.fail('AI DM暂时没有完整回应，请重试；调查进度仍保留。'),30000);}
- private resetReply(){this.clearDeadline();this.responseIndex=null;this.audioIndex=null;this.transcript='';this.source='ai';this.started=false;this.bytes=0;}
+ private resetReply(){this.clearDeadline();this.activeRequestId=null;this.responseIndex=null;this.audioIndex=null;this.transcript='';this.source='ai';this.started=false;this.bytes=0;}
  private cancelTurn(){const active=this.active;this.active=null;this.resetReply();this.audio.clear();active?.reject(cancelled());}
  private fail(message:string){this.stop();this.state('error');this.callbacks.onError(message);}
  private receive(m:Message){
+  // Relay turn tags prevent cancelled speech/text from reviving during a newer question.
+  if(typeof m.turn_id==='string'&&m.turn_id!==this.activeRequestId)return;
   for(const [id,p] of this.pending){if(p.types.includes(m.type)&&(id.startsWith('event:')||m.respond_to===id)){
    clearTimeout(p.timer);this.pending.delete(id);
    if(m.type==='ConfigRejected'||m.success===false)p.reject(new Error('AI DM模型或音色配置被拒绝，请检查服务权限。'));else p.resolve(m);
@@ -54,6 +61,7 @@ export class DiningDmSession {
   if(m.type==='ResponseBlocked'){this.fail('这次AI回复未能生成，请换一种问法。');return;}
   if(m.type==='CloseConnection'){this.fail('AI DM会话已结束，请重新连接。');return;}
   if(!this.active)return;
+  if(m.type==='TtsWarning'){this.callbacks.onWarning?.(typeof m.message==='string'?m.message:'主持人语音暂不可用，可以继续阅读回复。');return;}
   switch(m.type){
    case 'ResponseStartTextStream':this.progress();this.started=true;this.transcript='';this.responseIndex=m.index;this.source=m.source==='opening'?'opening':m.source==='local-guidance'?'local-guidance':'ai';break;
    case 'ResponseTextSegment':if(m.index===this.responseIndex&&typeof m.text==='string'){this.progress();this.transcript+=m.text;this.callbacks.onReply(this.transcript,false,this.source);}break;
@@ -72,12 +80,18 @@ export class DiningDmSession {
   if(this.ready)return;if(this.connecting)return this.connecting;
   const generation=this.generation,current=()=>generation===this.generation;this.state('connecting');
   const work=(async()=>{
+   const endpoints=dmEndpoints(this.apiBase);
    const controller=new AbortController();this.statusController=controller;const deadline=setTimeout(()=>controller.abort(),5000);
-   let response:Response;try{response=await fetch('/api/nia/status',{signal:controller.signal});}finally{clearTimeout(deadline);}
-   let status:{configured?:boolean;dining_loop?:boolean};try{status=await response.json();}catch{throw new Error('AI DM本地服务未启动，请检查4179服务；调查仍可继续。');}
-   if(!current())throw cancelled();if(!response.ok||!status.configured)throw new Error('实时AI DM未配置，调查仍可继续。');
-   if(!status.dining_loop)throw new Error('AI DM服务版本尚未更新，请重新启动本地服务。');
-   const ws=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/api/nia/dining-session`);this.socket=ws;
+   let response:Response,status:{configured?:boolean;dining_loop?:boolean;auth_required?:boolean}|null;
+   try{response=await fetch(endpoints.status,{signal:controller.signal,credentials:'omit'});status=await response.json();}
+   catch{if(!current())throw cancelled();throw new Error(controller.signal.aborted?'AI DM服务连接超时，请重试或使用预设文字提示。':'无法连接实时 AI DM 服务，请重试或使用预设文字提示。');}
+   finally{clearTimeout(deadline);if(this.statusController===controller)this.statusController=null;}
+   if(!current())throw cancelled();
+   if(status?.auth_required&&!this.inviteToken)throw new Error('实时主持需要邀请链接中的连接码，请使用完整邀请链接。');
+   if(!response.ok||!status?.configured)throw new Error('实时AI DM未配置，调查仍可继续。');
+   if(!status.dining_loop)throw new Error('AI DM服务版本尚未更新；可继续使用预设文字提示。');
+   const sessionUrl=new URL(endpoints.session);if(this.inviteToken)sessionUrl.searchParams.set('token',this.inviteToken);
+   const ws=new WebSocket(sessionUrl.href);this.socket=ws;
    ws.addEventListener('message',event=>{if(!current())return;let m:Message;try{m=JSON.parse(event.data);}catch{this.fail('AI DM消息无法读取，请重新连接。');return;}if(m&&typeof m.type==='string'){try{this.receive(m);}catch{this.fail('AI DM回复处理失败，请重新连接。');}}});
    ws.addEventListener('error',()=>{if(current())this.fail('无法连接AI DM服务，请重试；调查进度仍保留。');});
    ws.addEventListener('close',()=>{if(current())this.fail('实时AI DM已断开，请重新连接。');});
@@ -90,6 +104,8 @@ export class DiningDmSession {
   try{await work;}finally{if(this.connecting===work)this.connecting=null;}
  }
  private async run(type:'PostMultimodalGenerate'|'SpeakOpening',text:string,options?:{signal?:AbortSignal}){
+  // A cancelled generation gets a fresh transport: NIA does not consistently echo request IDs.
+  if(this.active||this.connecting)this.stop();
   const operation=++this.operation;this.clearIdle();this.cancelTurn();if(this.ready)this.send({type:'InterruptAgent'});
   const signal=options?.signal;
   const abort=()=>{if(operation===this.operation)this.interrupt();};signal?.addEventListener('abort',abort,{once:true});
@@ -97,7 +113,7 @@ export class DiningDmSession {
    if(signal?.aborted)throw cancelled();await this.audio.open();if(operation!==this.operation)throw cancelled();
    await this.connect();if(operation!==this.operation)throw cancelled();this.sendContext(true);
    const completed=new Promise<void>((resolve,reject)=>{this.active={resolve,reject};});this.state('thinking');this.progress();
-   this.send({type,...(type==='PostMultimodalGenerate'?{text}:{}),request_id:crypto.randomUUID()});await completed;
+   this.activeRequestId=crypto.randomUUID();this.send({type,...(type==='PostMultimodalGenerate'?{text}:{}),request_id:this.activeRequestId});await completed;
   }catch(error){
    if(operation===this.operation&&!(error instanceof DOMException&&error.name==='AbortError')){
     const message=error instanceof Error?error.message:'AI DM连接失败，请重试。';this.fail(message);
@@ -107,7 +123,7 @@ export class DiningDmSession {
  }
  sendText(text:string,options?:{signal?:AbortSignal}){text=text.trim().slice(0,1200);return text?this.run('PostMultimodalGenerate',text,options):Promise.resolve();}
  speakOpening(options?:{signal?:AbortSignal}){return this.run('SpeakOpening','',options);}
- interrupt(){this.operation++;this.cancelTurn();if(this.socket?.readyState===WebSocket.OPEN)this.send({type:'InterruptAgent'});this.state('idle');this.idle();}
+ interrupt(){this.stop();}
  stop(){
   this.generation++;this.operation++;this.ready=false;this.connecting=null;this.clearIdle();this.statusController?.abort();this.statusController=null;
   this.cancelTurn();this.audio.close();this.socket?.close();this.socket=null;

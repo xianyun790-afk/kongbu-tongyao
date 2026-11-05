@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {Mic,Square,X} from 'lucide-react';
-import {LocalSpeechSession,type SpeechState} from '@/lib/local-speech';
+import type {SpeechState} from '@/lib/local-speech';
+import {BrowserSpeechSession} from '@/lib/browser-speech';
 
 type Props={suspended:boolean;onStart:()=>void;onCancel:()=>void;onAsk:(text:string)=>void;onActiveChange:(active:boolean)=>void;onStatus:(text:string)=>void};
 
@@ -8,10 +9,10 @@ type Props={suspended:boolean;onStart:()=>void;onCancel:()=>void;onAsk:(text:str
 export function VoiceBubble(props:Props){
  const [state,setState]=useState<SpeechState>('idle');
  const latest=useRef(props);latest.current=props;
- const session=useRef<LocalSpeechSession|null>(null);
+ const session=useRef<BrowserSpeechSession|null>(null);
  useEffect(()=>{
   let mounted=true;
-  const speech=new LocalSpeechSession({
+  const speech=new BrowserSpeechSession({
    onState:next=>{if(!mounted)return;setState(next);latest.current.onActiveChange(next!=='idle');latest.current.onStatus(next==='starting'?'正在开启麦克风…':next==='listening'?'正在听，说完停顿即可。也可以再点一下结束。':next==='transcribing'?'正在识别你说的话…':'');},
    onLevel:()=>{},
    onFinal:text=>{if(mounted&&!latest.current.suspended)latest.current.onAsk(text);},

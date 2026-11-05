@@ -1,0 +1,16 @@
+{
+  "name": "kongbu-tongyao-dm-backend",
+  "private": true,
+  "version": "0.1.2",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node scripts/dining-public-server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "ws": "8.22.0"
+  }
+}
