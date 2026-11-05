@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
+import {gzipSync} from 'node:zlib';
 import {fetchSceneBytes,sceneDecodeDeadline} from '../src/dining-loop/scene-loading.ts';
 
 async function serverFor(t,handler){
@@ -19,6 +20,12 @@ test('unknown content length uses the authored model size',async t=>{
  const url=await serverFor(t,(_req,res)=>{res.writeHead(200);res.end('abc');});
  const progress=[];await fetchSceneBytes(url,{signal:new AbortController().signal,expectedBytes:3,onProgress:p=>progress.push(p)});
  assert.equal(progress.at(-1).total,3);assert.equal(progress.at(-1).loaded,3);
+});
+test('compressed hosting responses use the model byte count rather than the compressed Content-Length',async t=>{
+ const source=Buffer.from('office model '.repeat(1000)),compressed=gzipSync(source);
+ const url=await serverFor(t,(_req,res)=>{res.writeHead(200,{'content-encoding':'gzip','content-length':String(compressed.length)});res.end(compressed);});
+ const progress=[];const bytes=await fetchSceneBytes(url,{signal:new AbortController().signal,expectedBytes:source.length,onProgress:p=>progress.push(p)});
+ assert.deepEqual(Buffer.from(bytes),source);assert.equal(progress.at(-1).loaded,source.length);assert.equal(progress.at(-1).total,source.length);
 });
 test('a missing model fails with a retryable message',async t=>{
  const url=await serverFor(t,(_req,res)=>{res.writeHead(404);res.end();});

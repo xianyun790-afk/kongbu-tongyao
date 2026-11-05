@@ -11,7 +11,9 @@ export async function fetchSceneBytes(url:string,{signal,onProgress,expectedByte
  try{
   const response=await fetch(url,{signal:controller.signal});
   if(!response.ok)throw new Error(`二楼资源下载失败（${response.status}），请重试。`);
-  const total=Number(response.headers.get('content-length'))||expectedBytes;
+  // Fetch yields decompressed bytes; Pages may report the compressed transfer size.
+  const encoding=response.headers.get('content-encoding');
+  const total=expectedBytes||(!encoding||encoding==='identity'?Number(response.headers.get('content-length')):0);
   let loaded=0;onProgress?.({phase:'download',loaded,total});touch();
   if(!response.body){const bytes=await response.arrayBuffer();onProgress?.({phase:'download',loaded:bytes.byteLength,total:total||bytes.byteLength});return bytes;}
   const reader=response.body.getReader(),chunks:Uint8Array[]=[];
