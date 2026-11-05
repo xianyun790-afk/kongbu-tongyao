@@ -9,6 +9,7 @@ import {createDiningDoor} from './room-door';
 import {prepareOfficeWeather} from './office-weather';
 import {RoomCameraBoundary} from './camera-boundary';
 import {officeCameraObstacles,OFFICE_MIN_DISTANCE} from './office-camera';
+import {fetchSceneBytes,sceneDecodeDeadline,type SceneLoadProgress} from './scene-loading';
 
 export type TargetId='radio'|'tape'|'stool'|'duty'|'dm';
 export type RoomId='dining'|'office';
@@ -17,7 +18,7 @@ export type Point=[number,number,number];
 type Shot={position:Point;target:Point;fov?:number};
 export type RoomInteraction={id:SceneTargetId;objectNames:string[];anchor:Point;focus:Shot};
 export type RoomManifest={version:string;model:string;opening:Shot;interactions:RoomInteraction[];interiorBounds?:{min:Point;max:Point}};
-type Options={onReady:(manifest:RoomManifest)=>void;onProgress:(progress:number)=>void;onError:(message:string)=>void;onPick:(id:SceneTargetId)=>void;onMove?:()=>void};
+type Options={onReady:(manifest:RoomManifest)=>void;onProgress:(progress:number)=>void;onOfficeProgress?:(progress:SceneLoadProgress)=>void;onError:(message:string)=>void;onPick:(id:SceneTargetId)=>void;onMove?:()=>void};
 type Tween={start:number;fromPosition:THREE.Vector3;fromTarget:THREE.Vector3;fromFov:number;to:Shot};
 const LABELS:Record<SceneTargetId,string>={radio:'旧广播',tape:'许知音的磁带',stool:'儿童小凳',duty:'旧值日表',dm:'主持播放器','office-door':'大厅 · 上楼去值班室','dining-door':'离开值班室，返回餐厅',ledger:'窗下名册',computer:'离线台机',victim:'桌旁现场',coffee:'倾倒的瓷杯'};
 // The player's selected opening composition; keep the exported asset camera intact.
@@ -35,6 +36,7 @@ export class DiningRoomViewer{
  private draco:DRACOLoader|null=null;
  private diningWorld=new THREE.Group();private officeWorld:THREE.Group|null=null;private diningGroup:THREE.Group|null=null;private officeGroup:THREE.Group|null=null;
  private diningManifest:RoomManifest|null=null;private officeManifest:RoomManifest|null=null;private officeLoading:Promise<void>|null=null;private currentRoom:RoomId='dining';
+ private officeAbort:AbortController|null=null;
  private hallLeaf:THREE.Group|null=null;private hallOpen=0;private hallDesired=false;
  private reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  private lastRender=0;private width=1;private height=1;private targetId:SceneTargetId|null=null;
@@ -122,19 +124,24 @@ export class DiningRoomViewer{
  /** Load a separate real mesh scene. A failed request can be retried without losing dining progress. */
  preloadOffice(){
   if(this.officeGroup)return Promise.resolve();if(this.officeLoading)return this.officeLoading;
-  this.officeLoading=this.loadOffice().finally(()=>{this.officeLoading=null;});return this.officeLoading;
+  const controller=new AbortController();this.officeAbort=controller;
+  this.officeLoading=this.loadOffice(controller.signal).finally(()=>{if(this.officeAbort===controller){this.officeLoading=null;this.officeAbort=null;}});return this.officeLoading;
  }
- private async loadOffice(){
-  const response=await fetch(publicAsset('models/dining-loop/office-manifest.json'),{signal:this.abort.signal});
-  if(!response.ok)throw new Error('值班室模型暂未载入，可以返回餐厅或重试。');
-  const raw=await response.json();
+ cancelOfficeLoad(){this.officeAbort?.abort();this.officeAbort=null;this.officeLoading=null;}
+ private async loadOffice(signal:AbortSignal){
+  this.options.onOfficeProgress?.({phase:'download',loaded:0,total:0});
+  const config=await fetchSceneBytes(publicAsset('models/dining-loop/office-manifest.json'),{signal});
+  const raw=JSON.parse(new TextDecoder().decode(config));
   const manifest={...raw,interactions:(raw.interactions??[]).map((item:Omit<RoomInteraction,'id'>&{id:string})=>({...item,id:item.id==='return'?'dining-door':item.id}))} as RoomManifest;
   if(!manifest.opening||!Array.isArray(manifest.interactions))throw new Error('值班室场景配置不完整。');
   const bounds=manifest.interiorBounds??{min:[-2.6,0,-2.5],max:[2.6,3.3,2.5]};
   this.officeBoundary=new RoomCameraBoundary(new THREE.Vector3(...bounds.min),new THREE.Vector3(...bounds.max),officeCameraObstacles());
   const loader=new GLTFLoader();if(this.draco)loader.setDRACOLoader(this.draco);
-  const gltf=await loader.loadAsync(publicAsset('models/dining-loop/')+manifest.model,event=>{if(!this.disposed)this.options.onProgress(event.total?Math.min(.97,event.loaded/event.total):.5);});
-  if(this.disposed){this.disposeObject(gltf.scene);throw new DOMException('Scene closed','AbortError');}
+  let downloaded:SceneLoadProgress={phase:'download',loaded:0,total:Number(raw.asset?.bytes)||0};
+  const bytes=await fetchSceneBytes(publicAsset('models/dining-loop/')+manifest.model,{signal,expectedBytes:downloaded.total,onProgress:progress=>{downloaded=progress;if(!this.disposed)this.options.onOfficeProgress?.(progress);}});
+  this.options.onOfficeProgress?.({...downloaded,phase:'decode'});
+  const gltf=await sceneDecodeDeadline(loader.parseAsync(bytes,publicAsset('models/dining-loop/')),{signal,onLateValue:gltf=>this.disposeObject(gltf.scene)});
+  if(this.disposed||signal.aborted){this.disposeObject(gltf.scene);throw new DOMException('Scene closed','AbortError');}
   gltf.scene.traverse(object=>{if(object instanceof THREE.Mesh){object.castShadow=!/glass|translucent|window/i.test(object.name);object.receiveShadow=true;}});
   const world=new THREE.Group();world.add(gltf.scene);world.visible=false;
   this.officeOccluders=['OFFICE_architecture__static','OFFICE_architecture__return'].flatMap(name=>{const mesh=gltf.scene.getObjectByName(name);return mesh?[mesh]:[];});
@@ -144,7 +151,7 @@ export class DiningRoomViewer{
   const moon=new THREE.DirectionalLight(0x9db8d6,1.2);moon.position.set(1.2,3,-3.5);moon.target.position.set(0,1,0);world.add(moon,moon.target);
   const bounce=new THREE.PointLight(0xe4c299,1.45,5.5,2);bounce.position.set(.6,2.7,1.6);world.add(bounce);
   const desk=new THREE.PointLight(0xffc98b,1.7,4,2);desk.position.set(.6,1.5,-1.2);desk.castShadow=true;desk.shadow.mapSize.set(1024,1024);desk.shadow.radius=6;desk.shadow.intensity=.72;desk.shadow.bias=-.0002;desk.shadow.normalBias=.01;world.add(desk);
-  this.officeGroup=gltf.scene;this.officeManifest=manifest;this.officeWorld=world;this.scene.add(world);this.bindInteractions(manifest,gltf.scene);this.options.onProgress(1);
+  this.officeGroup=gltf.scene;this.officeManifest=manifest;this.officeWorld=world;this.scene.add(world);this.bindInteractions(manifest,gltf.scene);this.options.onOfficeProgress?.({...downloaded,phase:'ready'});
  }
  openConnectionDoor(){this.hallDesired=true;this.focus(this.currentRoom==='dining'?'office-door':'dining-door');this.setInteractive(false);}
  showRoom(room:RoomId){
@@ -158,7 +165,9 @@ export class DiningRoomViewer{
   this.scene.environmentIntensity=room==='dining'?.13:.16;this.renderer.toneMappingExposure=room==='dining'?.84:.94;
   this.renderer.domElement.setAttribute('aria-label',room==='dining'?'可拖动环顾的白榆餐厅三维场景':'可拖动环顾的二楼值班室三维场景');
   this.officeBoundary?.reset();
-  const shot=room==='dining'?OPENING_SHOT:manifest.opening;this.camera.position.fromArray(shot.position);this.controls.target.fromArray(shot.target);this.camera.fov=shot.fov??45;this.camera.updateProjectionMatrix();this.controls.update();return true;
+  const shot=room==='dining'?OPENING_SHOT:manifest.opening;this.camera.position.fromArray(shot.position);this.controls.target.fromArray(shot.target);this.camera.fov=shot.fov??45;this.camera.updateProjectionMatrix();this.controls.update();
+  // Finish uploading the first visible frame before removing the transition.
+  this.renderer.render(this.scene,this.camera);return true;
  }
  private addLights(){
   const hemi=new THREE.HemisphereLight(0x8195b1,0x241811,.36);this.diningWorld.add(hemi);
@@ -280,7 +289,7 @@ export class DiningRoomViewer{
  private disposeObject(root:THREE.Object3D){const materials=new Set<THREE.Material>(),textures=new Set<THREE.Texture>();root.traverse(object=>{
   if(object instanceof THREE.Mesh||object instanceof THREE.LineSegments){object.geometry.dispose();for(const material of Array.isArray(object.material)?object.material:[object.material])materials.add(material);}
  });for(const material of materials){for(const value of Object.values(material))if(value instanceof THREE.Texture)textures.add(value);material.dispose();}for(const texture of textures)texture.dispose();}
- destroy(){this.disposed=true;this.abort.abort();cancelAnimationFrame(this.frame);this.resizeObserver.disconnect();this.controls.dispose();
+ destroy(){this.disposed=true;this.abort.abort();this.cancelOfficeLoad();cancelAnimationFrame(this.frame);this.resizeObserver.disconnect();this.controls.dispose();
   this.entranceComplete=null;this.entranceStart=null;this.entrance?.dispose();this.entrance=null;
   this.renderer.domElement.removeEventListener('pointerdown',this.onDown);this.renderer.domElement.removeEventListener('pointerup',this.onUp);this.renderer.domElement.removeEventListener('pointermove',this.onHover);this.renderer.domElement.removeEventListener('webglcontextlost',this.onContextLost);
   this.renderer.domElement.removeEventListener('pointercancel',this.onPointerCancel);this.renderer.domElement.removeEventListener('wheel',this.onWheel);

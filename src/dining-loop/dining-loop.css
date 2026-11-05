@@ -355,6 +355,13 @@
 .dl-room-travel span{display:block;margin-top:15px;font-size:12px;line-height:1.9;color:#a8aaa2}
 .dl-room-travel[data-phase=arriving]{animation:dl-travel-in .65s ease both;pointer-events:none}
 .dl-room-travel[data-phase=arriving]>div{animation:none}
+.dining-loop[data-travel-phase=loading] .dl-header{opacity:1}
+.dl-room-travel[data-phase=loading]{background:linear-gradient(transparent 30%,#090f1366);place-items:end center;padding-bottom:max(105px,env(safe-area-inset-bottom));animation:none}
+.dl-room-travel[data-phase=loading]>div{width:min(440px,100%);padding:24px 28px;background:#0e171deb;border:1px solid #a5976a40;box-shadow:0 15px 55px #0006;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);animation:none}
+.dl-room-travel[data-phase=loading] small{margin-bottom:9px}
+.dl-room-travel[data-phase=loading] p{font-size:17px;margin:0 0 14px}
+.dl-room-travel[data-phase=loading] .dl-loading-track{margin:0 auto;width:100%}
+.dl-room-travel[data-phase=loading] .dl-load-note{font-size:10px;margin-top:7px;color:#9c9e94}
 .dl-route-cancel{position:absolute;right:26px;top:23px;min-height:42px;padding:8px 13px;font-size:11px;border:1px solid #95896f55;color:#d7cbb1;background:#0d1418e6}
 .dl-route-actions{display:flex;justify-content:center;gap:20px;margin-top:25px}
 .dl-route-actions button{min-height:44px;padding:8px 16px;border:1px solid #a18b5e66;color:#dfcba2;font-size:13px}
