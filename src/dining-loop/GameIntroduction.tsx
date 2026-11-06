@@ -110,7 +110,7 @@ export function GameIntroduction({hasSave,foundCount,groupHasSave=false,groupFou
         <nav className="gi-guide-nav" aria-label="开团说明章节">{guidePages.map((item,index)=><button key={item.id} aria-current={page===item.id?'page':undefined} onClick={()=>changePage(item.id)}><span>0{index+1}</span>{item.label}</button>)}</nav>
         <div ref={guideBody} className="gi-guide-body">
           {page==='steps'&&<section aria-label="开团流程">
-            <div className="gi-guide-intro"><h3>一块公共屏，六份个人文字。</h3><p>个人经历私下阅读，公共物件一起核对。你只扮演一位，其他角色都由真人完成。</p></div>
+            <div className="gi-guide-intro"><h3>今夜，为什么回到这里？</h3><p>白榆即将拆除，一封匿名邀请让六位旧友重回餐厅。前院长承诺交出原始档案，旧广播却先响了：最后一句之前，少了一小段。这一轮先查清，录音里漏掉了哪个称呼。</p></div><div className="gi-guide-intro"><h3>一块公共屏，六份个人文字。</h3><p>个人经历私下阅读，公共物件一起核对。你只扮演一位，其他角色都由真人完成。</p></div>
             <ol className="gi-steps">{groupSteps.map((step,index)=><li key={step.title}><span className="gi-step-number">0{index+1}</span><div><h4>{step.title}</h4><p>{step.body}</p></div></li>)}</ol>
             <div className="gi-scope-box"><h4>这次能玩到哪里</h4><p>第一轮建议 20–30 分钟，尚未经过六人盲测。先调查餐厅录音里缺失的称呼，并说明依据。二楼值班室只供场景预览，不是本轮必经关卡。</p><p><strong>当前没有多人同步。</strong>各自打开网页不会共享进度；先用共同语音和一块共享屏幕组织。本机记录由共享屏操作者保管。</p><p>在线主持使用预设文字。完整 60–90 分钟文本剧本属于另一套流程，尚未完整实现在场景中。</p></div>
             <button className="gi-inline-link" onClick={()=>changePage('roles')}>看看六位旧友<ArrowRight size={15}/></button>
