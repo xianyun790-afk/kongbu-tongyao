@@ -103,8 +103,8 @@ function saveFixture(search=''){
  const api=compileModule(savePath,{'./story':story},{location:{search},localStorage});
  return {
   ...api,
-  put:value=>values.set(api.SAVE_KEY,JSON.stringify(value)),
-  raw:()=>JSON.parse(values.get(api.SAVE_KEY)||'null'),
+  put:(value,mode='solo')=>values.set(api.saveKey(mode),JSON.stringify(value)),
+  raw:(mode='solo')=>JSON.parse(values.get(api.saveKey(mode))||'null'),
   failRead:()=>{failRead=true;},failWrite:()=>{failWrite=true;},
  };
 }
@@ -182,4 +182,30 @@ test('save recovery: unsupported version and malformed data return a fresh round
 test('save storage: denied reads recover safely and failed writes report failure',()=>{
  const f=saveFixture();f.failRead();assert.deepEqual(plain(f.loadSave()),plain(f.freshSave()));
  f.failWrite();assert.equal(f.persistSave(f.freshSave()),false);
+});
+
+
+test('play modes: completed solo progress never appears in a fresh shared-screen group',()=>{
+ const f=saveFixture();const solo=solvedSave(f,{log:[{id:'solo-secret',who:'you',text:'小满',complete:true}]});
+ assert.equal(f.persistSave(solo),true);
+ assert.deepEqual(plain(f.loadSave('group')),plain(f.freshSave()));
+ assert.equal(f.loadSave().complete,true);
+ assert.equal(f.saveKey('solo'),f.SAVE_KEY,'keep the original solo key');
+ assert.notEqual(f.saveKey('group'),f.SAVE_KEY);
+});
+test('play modes: group saves, resets and refreshes preserve independent solo progress',()=>{
+ const f=saveFixture('?qa=groups');f.persistSave(solvedSave(f),'solo');
+ const group={...f.freshSave(),started:true,found:['A01'],log:[{id:'group',who:'you',text:'先对照广播',complete:true}]};
+ f.persistSave(group,'group');f.rememberPlayMode('group');
+ assert.equal(f.loadPlayMode(),'group');
+ assert.deepEqual(plain(f.loadSave('group')),plain(group));
+ f.persistSave(f.freshSave(),'group');
+ assert.equal(f.loadSave('solo').complete,true);
+ assert.equal(f.loadSave('group').started,false);
+});
+test('play modes: malformed preferences use solo and storage denial remains safe',()=>{
+ const f=saveFixture();f.rememberPlayMode('invalid');assert.equal(f.loadPlayMode(),'solo');
+ f.failRead();assert.equal(f.loadPlayMode(),'solo');
+ f.failWrite();assert.doesNotThrow(()=>f.rememberPlayMode('group'));
+ assert.equal(f.persistSave(f.freshSave(),'group'),false);
 });

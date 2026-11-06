@@ -370,3 +370,9 @@
 @keyframes dl-route-text{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:650px){.dl-room-travel p{font-size:16px;letter-spacing:1px;max-width:280px}.dl-room-travel small{font-size:9px}.dl-route-cancel{right:16px;top:15px}.dining-loop[data-room=office] .dl-brand>small{font-size:9px;letter-spacing:0}.dining-loop[data-room=office] .dl-bottom>span{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.dl-room-travel,.dl-room-travel>div{animation:none}}
+
+/* Keep the canvas mounted while an introduction card owns focus. */
+.dl-world-ui{display:contents}
+.dl-share-confirm{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #9c885d77;font-size:14px;line-height:1.8;color:#493b29;cursor:pointer}
+.dl-share-confirm input{margin-top:6px;accent-color:#735c36;flex-shrink:0}
+@media(max-width:600px){.dl-header-actions>button{gap:5px;padding:6px 8px}.dl-header-actions>button:first-child>span{font-size:11px}.dl-header{gap:6px}.dl-brand>small{display:none}}
