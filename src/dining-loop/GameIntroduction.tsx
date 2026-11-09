@@ -30,6 +30,7 @@ export function GameIntroduction({hasSave,foundCount,groupHasSave=false,groupFou
   const claim=selectedRole?roleClaimText(selectedRole.name):'';
   const allReady=confirmed.every(Boolean);
   const publicGuide=import.meta.env.BASE_URL+'play-kit/round-one-public-v0.2.0.zip';
+  const scriptPreview=import.meta.env.BASE_URL+'script/';
 
   useEffect(()=>{
     if(!guide)return;
@@ -97,6 +98,7 @@ export function GameIntroduction({hasSave,foundCount,groupHasSave=false,groupFou
           <button ref={groupTrigger} className="gi-button gi-button-secondary" onClick={openGuide}><Users size={16}/>六人开团与角色</button>
         </div>
         <p className="gi-entry-scope">当前在线主持为预设文字 · 二楼值班室仅为场景预览</p>
+        <a className="gi-script-preview" href={scriptPreview}>完整剧本与六人角色预览<ArrowRight size={14}/></a>
       </div>
     </section>
 

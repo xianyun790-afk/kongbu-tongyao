@@ -23,6 +23,8 @@
 .gi-button-secondary{border:1px solid #8e826442;color:#c9c3b5;gap:9px;background:#13191b4d}
 .gi-button-secondary:hover{background:#bba27314;border-color:#8e8264}
 .gi-entry-scope{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;line-height:1.8;color:#a29d90;margin:20px 0 0;letter-spacing:.03em}
+.gi-script-preview{display:inline-flex;align-items:center;gap:9px;min-height:44px;font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:#d0bd97;text-decoration:underline;text-underline-offset:5px;text-decoration-color:#b5a08070}
+.gi-script-preview:hover{color:#f2dfbb}
 .gi-guide-overlay{pointer-events:auto;position:absolute;inset:0;background:#090e12c4;backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:24px}
 .gi-guide{width:980px;max-width:100%;max-height:calc(100svh - 48px);display:flex;flex-direction:column;background:linear-gradient(135deg,#e8e1cf,#dcd3bc 80%);border:1px solid #b5a17a;border-radius:3px;box-shadow:0 24px 100px #0008,inset 0 0 65px #9e8c6220;overflow:hidden;color:#403b31;color-scheme:light}
 .gi-guide-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:27px 32px 21px;flex:none}
